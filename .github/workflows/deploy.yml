@@ -75,3 +75,29 @@ jobs:
       - name: Output Information
         run: |
           echo "Live URL: ${{steps.deploy.outputs.website-url}}"
+  deploy2: # added this for docker deploy and does same as above
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+          path: ./dist
+      - name: Output contents
+        run: ls
+      - name: Deploy site
+        id: deploy
+        uses: ./.github/customActions/deploy-s3-docker
+        env: 
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        with:
+          bucket: gha-custom-action-hosting
+          dist-folder: ./dist
+          # bucket-region: us-east-1
+      - name: Output Information
+        run: |
+          echo "Live URL: ${{steps.deploy.outputs.website-url}}"
